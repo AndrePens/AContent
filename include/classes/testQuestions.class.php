@@ -262,6 +262,81 @@ function test_question_qti_export($question_ids) {
 	exit;
 }
 
+/** 
+ * Export test questions
+ * Here i'll export the question in Moodle format
+ * @param	array	an array consist of all the ids of the questions in which we desired to export.
+ */
+function test_question_moodle_export($question_ids)
+{
+    	global $_course_id;
+	
+	require_once(TR_INCLUDE_PATH.'classes/DAO/CoursesDAO.class.php');
+	require_once(TR_INCLUDE_PATH.'classes/DAO/TestsQuestionsDAO.class.php');
+	require_once(TR_INCLUDE_PATH.'classes/zipfile.class.php'); // for zipfile
+	require_once(TR_INCLUDE_PATH.'lib/html_resource_parser.inc.php'); // for get_html_resources()
+	require_once(TR_INCLUDE_PATH.'classes/XML/XML_HTMLSax/XML_HTMLSax.php');	// for XML_HTMLSax
+
+	global $savant, $db, $languageManager;
+
+	$coursesDAO = new CoursesDAO();
+	$course_row = $coursesDAO->get($_course_id);
+	$course_language = $course_row['primary_language'];
+	$courseLanguage =& $languageManager->getLanguage($course_language);
+	$course_language_charset = $courseLanguage->getCharacterSet();
+
+	$zipfile = new zipfile();
+	$zipfile->create_dir('resources/'); // for all the dependency files
+	$resources    = array();
+	$dependencies = array();
+
+	asort($question_ids);
+
+	$testsQuestionsDAO = new TestsQuestionsDAO();
+	$rows = $testsQuestionsDAO->getByQuestionIDs($question_ids);
+	if (is_array($rows)) {
+		foreach ($rows as $row) {
+			$obj = TestQuestions::getQuestion($row['type']);
+			$xml = $obj->exportQTI($row, $course_language_charset, '2.1');
+			$local_dependencies = array();
+	
+			$text_blob = implode(' ', $row);
+			$local_dependencies = get_html_resources($text_blob);
+			$dependencies = array_merge($dependencies, $local_dependencies);
+	
+			$resources[] = array('href'         => 'question_'.$row['question_id'].'.xml',
+								 'dependencies' => array_keys($local_dependencies));
+	
+			//TODO
+			$savant->assign('xml_content', $xml);
+			$savant->assign('title', $row['question']);
+			$xml = $savant->fetch('tests/test_questions/wrapperMoodle.tmpl.php');
+	
+			$zipfile->add_file($xml, 'question_'.$row['question_id'].'.xml');
+		}
+	}
+
+	// add any dependency files:
+	foreach ($dependencies as $resource => $resource_server_path) {
+		$zipfile->add_file(@file_get_contents($resource_server_path), 'resources/' . $resource, filemtime($resource_server_path));
+	}
+
+	// construct the manifest xml
+	$savant->assign('resources', $resources);
+	$savant->assign('dependencies', array_keys($dependencies));
+	$savant->assign('encoding', $course_language_charset);
+	//$manifest_xml = $savant->fetch('tests/test_questions/manifest_qti_2p1.tmpl.php');
+
+	//$zipfile->add_file($manifest_xml, 'imsmanifest.xml');
+
+	$zipfile->close();
+
+	$filename = str_replace(array(' ', ':'), '_', $course_row['title'].'-'._AT('question_database').'-'.date('Ymd'));
+	$zipfile->send_file($filename);
+	exit;
+}
+
+
 
 /** 
  * Export test 
