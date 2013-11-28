@@ -1,4 +1,4 @@
-<?php
+ <?php
 /************************************************************************/
 /* AContent                                                             */
 /************************************************************************/
@@ -79,11 +79,21 @@ if ( (isset($_GET['edit']) || isset($_GET['delete']) || isset($_GET['export']) |
 
 	array_walk($ids, 'intval_array');
 
-	if ($_GET['qti_export_version']=='2.1'){
+        if($_GET['qti_export_version']=='2.1'){
+            test_question_qti_export_v2p1($ids);
+        }
+        else if($_GET['qti_export_version']=='1.2.1'){
+            test_question_qti_export($ids);
+        }
+        else if($_GET['qti_export_version']=='moodle_XML'){
+            echo 'ciao';  // ricordarsi di rimetterlo a posto
+        }
+        
+/*	if ($_GET['qti_export_version']=='2.1'){
 		test_question_qti_export_v2p1($ids);
 	} else {
 		test_question_qti_export($ids);
-	}
+	}*/
 
 	exit;
 }
