@@ -86,14 +86,8 @@ if ( (isset($_GET['edit']) || isset($_GET['delete']) || isset($_GET['export']) |
             test_question_qti_export($ids);
         }
         else if($_GET['qti_export_version']=='moodle_XML'){
-            echo 'ciao';  // ricordarsi di mettere una cosa come sopra
+            test_question_moodle_export($ids);
         }
-        
-/*	if ($_GET['qti_export_version']=='2.1'){
-		test_question_qti_export_v2p1($ids);
-	} else {
-		test_question_qti_export($ids);
-	}*/
 
 	exit;
 }
