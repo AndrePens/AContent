@@ -251,7 +251,7 @@ function test_question_qti_export($question_ids) {
 	$savant->assign('encoding', $course_language_charset);
 	$savant->assign('xml_filename', $xml_filename);
 //	$manifest_xml = $savant->fetch('tests/test_questions/manifest_qti_2p1.tmpl.php');
-	$manifest_xml = $savant->fetch('tests/test_questions/manifest_qti_1p2.tmpl.php');
+	$manifest_xml = $savant->fetch('tests/test_questions/manifest_qti_1p2.tmpl.php'); 
 
 	$zipfile->add_file($manifest_xml, 'imsmanifest.xml');
 
@@ -282,7 +282,7 @@ function test_question_moodle_export($question_ids)
 	$coursesDAO = new CoursesDAO();
 	$course_row = $coursesDAO->get($_course_id);
 	$course_language = $course_row['primary_language'];
-	$courseLanguage =& $languageManager->getLanguage($course_language);
+	$courseLanguage = $languageManager->getLanguage($course_language); //c'era un & sull'uguale
 	$course_language_charset = $courseLanguage->getCharacterSet();
 
 	$zipfile = new zipfile();
@@ -297,7 +297,7 @@ function test_question_moodle_export($question_ids)
 	if (is_array($rows)) {
 		foreach ($rows as $row) {
 			$obj = TestQuestions::getQuestion($row['type']);
-			$xml = $obj->exportQTI($row, $course_language_charset, '2.1');
+			$xml = $obj->exportMoodle($row, $course_language_charset);
 			$local_dependencies = array();
 	
 			$text_blob = implode(' ', $row);
@@ -645,6 +645,20 @@ function TestQuestionCounter($increment = FALSE) {
 		}
 		return $xml;
 	}
+        
+        /*final public */function exportMoodle($row, $encoding){    // made by Andrea Penso
+            $this->savant->assign('encoding', $encoding);
+            $this->savant->assign('weight', $row['weight']);
+            
+            foreach($row as $k => $v){
+                $row[$k] = htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
+            }
+             
+            $xml = $this->savant->fetch('tests/test_questions/'. $this->sPrefix . '_moodle.tmpl.php');
+            return $xml;
+        }
+        
+        
 
 	/**
 	* print the question template header
