@@ -1,7 +1,7 @@
 <<?php echo '?'; ?>xml version="1.0" encoding="<?php echo $this->encoding; ?>"<?php echo '?'; ?>>
    
 <quiz>
-<!-- Insertion in the category -->
+<!-- Insertion in the default category -->
 <question type="category">
     <category>
         <text>$course$/Default</text>
