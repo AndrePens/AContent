@@ -25,11 +25,13 @@
     </incorrectfeedback>
     <shownumcorrect/>
     <?php for ($i=0; $i < $this->num_choices; $i++): ?>
-    <answer fraction="100" format="html">
-      <text></text>
-      <feedback format="html">
-        <text><?php echo $this->row['choice_'.$i]; ?></text>
-      </feedback>
-    </answer>
+        <?php if ($this->row['answer_'.$i]): ?>
+            <answer fraction="100" format="html">
+              <text></text>
+              <feedback format="html">
+                <text><?php echo $this->row['choice_'.$i]; ?></text>
+              </feedback>
+            </answer>
+        <?php endif; ?>
     <?php endfor; ?>
   </question>
